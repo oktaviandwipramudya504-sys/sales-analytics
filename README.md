@@ -22,5 +22,3 @@ Vanilla JavaScript:** Menggerakkan mesin rendering partikel 3D pada objek Canvas
 Google Fonts:** Menggunakan *font family* `Inter` untuk keterbacaan data numerik yang tinggi dan `Space Grotesk` untuk penegasan judul berkarakter tekno.
 
 
-└── templates/
-    └── index.html  # File template interface utama dashboard
