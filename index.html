@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cyber Sales Analytics - Dashboard Penjualan 2022</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:      #0b111e;
+      --card:    #0f1929;
+      --card2:   #111e30;
+      --mint:    #00f5a0;
+      --cyan:    #00d4ff;
+      --teal:    #0affed;
+      --fg:      #cee9e4;
+      --muted:   #2a4a5e;
+      --border:  #163048;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .font-display { font-family: 'Space Grotesk', sans-serif; }
+
+    #particle-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .card-mint::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--mint), transparent);
+    }
+    .card-cyan::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+    .card-teal::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    }
+
+    .metric-card {
+      transition: border-color 0.4s, box-shadow 0.4s, transform 0.3s;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 32px rgba(0,245,160,0.07), 0 0 0 1px rgba(0,245,160,0.12);
+      border-color: rgba(0,245,160,0.2) !important;
+    }
+
+    .data-row { transition: background 0.2s; border-bottom: 1px solid var(--border); }
+    .data-row:hover td { background: rgba(0,245,160,0.03) !important; }
+
+    .spinner {
+      display: inline-block; width: 15px; height: 15px;
+      border: 2px solid rgba(0,245,160,0.25); border-top-color: var(--mint);
+      border-radius: 50%; animation: spin 0.65s linear infinite;
+      vertical-align: middle; margin-right: 7px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .fade-in { animation: fadeUp 0.5s ease both; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-mint {
+      background: rgba(0,245,160,0.08); border: 1px solid rgba(0,245,160,0.28); color: var(--mint);
+      transition: background 0.25s, box-shadow 0.25s; cursor: pointer;
+    }
+    .btn-mint:hover:not(:disabled) {
+      background: rgba(0,245,160,0.16); box-shadow: 0 0 20px rgba(0,245,160,0.15);
+    }
+    .btn-cyan {
+      background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.28); color: var(--cyan);
+      transition: background 0.25s, box-shadow 0.25s; cursor: pointer;
+    }
+    .btn-cyan:hover:not(:disabled) {
+      background: rgba(0,212,255,0.16); box-shadow: 0 0 20px rgba(0,212,255,0.15);
+    }
+
+    .rank-1 { background: rgba(0,245,160,0.12); color: var(--mint); border: 1px solid rgba(0,245,160,0.25); }
+    .rank-2 { background: rgba(0,212,255,0.10); color: var(--cyan); border: 1px solid rgba(0,212,255,0.22); }
+    .rank-3 { background: rgba(10,255,237,0.09); color: var(--teal); border: 1px solid rgba(10,255,237,0.2); }
+    .rank-n { background: rgba(42,74,94,0.25);   color: #5a8aa0;    border: 1px solid rgba(42,74,94,0.4); }
+
+    body::after {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 1;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+
+<div class="relative z-10 flex flex-col min-h-screen">
+  
+  <header class="sticky top-0 z-20 border-b backdrop-blur-md" style="background:rgba(11,17,30,0.88); border-color:var(--border);">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="w-2.5 h-2.5 rounded-full" style="background:var(--mint); box-shadow:0 0 10px rgba(0,245,160,0.7);"></span>
+        <h1 class="font-display text-lg tracking-widest uppercase font-bold text-white">Cyber Sales Analytics</h1>
+      </div>
+      <div class="flex items-center gap-3 text-xs tracking-widest uppercase text-gray-400">
+        <span>Dashboard Penjualan &bull; 2022</span>
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-7xl w-full mx-auto px-5 py-8">
+    
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 bg-slate-900/40 p-6 rounded-xl border border-slate-800/60 backdrop-blur-sm">
+      <div>
+        <h2 class="text-xl font-bold font-display text-white">Ringkasan Analisis Data</h2>
+        <p class="text-sm text-gray-400 mt-1">Sistem visualisasi performa penjualan produk kemasan</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button onclick="loadChart()" id="btn-chart" class="btn-mint px-5 py-2.5 rounded-lg text-sm font-semibold tracking-wide flex items-center">
+          📊 Lihat Grafik Analisis
+        </button>
+        <button onclick="runRetrain()" id="btn-retrain" class="btn-cyan px-5 py-2.5 rounded-lg text-sm font-semibold tracking-wide flex items-center">
+          🔄 Jalankan Prediksi Model
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div class="metric-card relative p-6 rounded-xl overflow-hidden card-mint">
+        <p class="text-xs tracking-wider text-gray-400 uppercase font-medium">Total Baris Data</p>
+        <p class="text-3xl font-bold tracking-tight text-white mt-2 font-display">{{ info.jumlah_baris }} Data</p>
+      </div>
+      <div class="metric-card relative p-6 rounded-xl overflow-hidden card-cyan">
+        <p class="text-xs tracking-wider text-gray-400 uppercase font-medium">Variasi Produk</p>
+        <p class="text-3xl font-bold tracking-tight mt-2 font-display" style="color:var(--cyan);">{{ info.jumlah_produk }} Jenis</p>
+      </div>
+      <div class="metric-card relative p-6 rounded-xl overflow-hidden card-teal">
+        <p class="text-xs tracking-wider text-gray-400 uppercase font-medium">Total Orderan</p>
+        <p class="text-3xl font-bold tracking-tight text-white mt-2 font-display">{{ "{:,.0f}".format(info.total_order).replace(",", ".") }}</p>
+      </div>
+      <div class="metric-card relative p-6 rounded-xl overflow-hidden card-mint">
+        <p class="text-xs tracking-wider uppercase font-medium" style="color:var(--mint);">Total Omzet</p>
+        <p class="text-2xl font-bold tracking-tight text-emerald-400 mt-2 font-display">Rp {{ "{:,.0f}".format(info.total_omzet).replace(",", ".") }}</p>
+      </div>
+    </div>
+
+    <div id="ml-container" class="hidden fade-in mb-8 p-6 rounded-xl border" style="background:var(--card2); border-color:var(--cyan);">
+      <h3 class="text-sm font-bold tracking-wider uppercase text-cyan-400 mb-4 flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span> Metrik Evaluasi Prediksi Model
+      </h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+          <p class="text-xs text-gray-400 uppercase">MAE (Tingkat Error)</p>
+          <p id="ml-mae" class="text-lg font-bold text-rose-400 mt-1">-</p>
+        </div>
+        <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+          <p class="text-xs text-gray-400 uppercase">Akurasi R² Score</p>
+          <p id="ml-r2" class="text-lg font-bold text-emerald-400 mt-1">-</p>
+        </div>
+        <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+          <p class="text-xs text-gray-400 uppercase">Data Latih</p>
+          <p id="ml-train" class="text-lg font-bold text-white mt-1">-</p>
+        </div>
+        <div class="p-4 rounded-lg bg-slate-900/80 border border-slate-800">
+          <p class="text-xs text-gray-400 uppercase">Data Uji</p>
+          <p id="ml-test" class="text-lg font-bold text-white mt-1">-</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <div class="lg:col-span-2 p-6 rounded-xl border overflow-hidden" style="background:var(--card); border-color:var(--border);">
+        <h3 class="text-sm font-bold tracking-wider uppercase text-white mb-4 flex items-center gap-2 font-display">
+          🏆 Top 5 Produk Unggulan
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="text-xs font-bold text-gray-400 uppercase border-b border-slate-800">
+                <th class="py-3 px-2">Rank</th>
+                <th class="py-3 px-2">Nama Produk</th>
+                <th class="py-3 px-2 text-right">Omzet</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for prod in info.top_produk %}
+              <tr class="data-row">
+                <td class="py-3 px-2">
+                  <span class="px-2 py-0.5 rounded text-xs font-bold {% if prod.rank==1 %}rank-1{% elif prod.rank==2 %}rank-2{% elif prod.rank==3 %}rank-3{% else %}rank-n{% endif %}">
+                    #{{ prod.rank }}
+                  </span>
+                </td>
+                <td class="py-3 px-2 font-medium text-white">{{ prod.produk }}</td>
+                <td class="py-3 px-2 text-right font-semibold text-emerald-400">Rp {{ "{:,.0f}".format(prod.total).replace(",", ".") }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="lg:col-span-3 p-6 rounded-xl border flex flex-col justify-center items-center min-h-[300px]" style="background:var(--card); border-color:var(--border);">
+        <div id="chart-placeholder" class="text-center text-gray-500 text-sm">
+          <p>Grafik analisis belum dimuat.</p>
+          <p class="text-xs text-gray-600 mt-1">Klik tombol "Lihat Grafik Analisis" untuk memuat visualisasi.</p>
+        </div>
+        <img id="chart-img" class="w-full h-auto hidden fade-in rounded-lg" alt="Grafik Penjualan" />
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  (function () {
+    const canvas = document.getElementById('particle-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W = canvas.width  = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    });
+
+    const COLORS = ['rgba(0,245,160,', 'rgba(0,212,255,', 'rgba(10,255,237,'];
+    const N = 180;
+    const pts = Array.from({ length: N }, () => ({
+      x:  (Math.random() - 0.5) * 2,
+      y:  (Math.random() - 0.5) * 2,
+      z:  Math.random() * 2 - 1,
+      vx: (Math.random() - 0.5) * 0.0002,
+      vy: (Math.random() - 0.5) * 0.0002,
+      vz: (Math.random() - 0.5) * 0.00015,
+      r:  Math.random() * 1.8 + 0.5,
+      a:  Math.random() * 0.4 + 0.2,
+      ci: Math.floor(Math.random() * COLORS.length),
+    }));
+
+    let angle = 0;
+    const project = (p, cosA, sinA) => {
+      const rx = p.x * cosA - p.z * sinA;
+      const rz = p.x * sinA + p.z * cosA;
+      const fov    = 1.8;
+      const scale  = fov / (fov + rz + 1.5);
+      const spread = Math.min(W, H) * 0.45;
+      return { sx: W / 2 + rx * spread * scale, sy: H / 2 + p.y * spread * scale, scale };
+    };
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      angle += 0.00025;
+      const cosA = Math.cos(angle), sinA = Math.sin(angle);
+      const mapped = pts.map(p => ({ p, proj: project(p, cosA, sinA) }));
+
+      for (let i = 0; i < mapped.length; i++) {
+        for (let j = i + 1; j < mapped.length; j++) {
+          const pi = mapped[i].proj, pj = mapped[j].proj;
+          const dx = pi.sx - pj.sx, dy = pi.sy - pj.sy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 85) {
+            const alpha = (1 - dist / 85) * 0.12 * Math.min(pi.scale, pj.scale);
+            ctx.beginPath(); ctx.moveTo(pi.sx, pi.sy); ctx.lineTo(pj.sx, pj.sy);
+            ctx.strokeStyle = `rgba(0,245,160,${alpha})`; ctx.lineWidth = 0.4; ctx.stroke();
+          }
+        }
+      }
+
+      for (const { p, proj } of mapped) {
+        p.x += p.vx; p.y += p.vy; p.z += p.vz;
+        if (p.x > 1) p.x = -1; if (p.x < -1) p.x = 1;
+        if (p.y > 1) p.y = -1; if (p.y < -1) p.y = 1;
+        if (p.z > 1) p.z = -1; if (p.z < -1) p.z = 1;
+
+        const { sx, sy, scale } = proj;
+        const r     = Math.max(p.r * scale * 1.2, 0.4);
+        const alpha = p.a * scale;
+        const col   = COLORS[p.ci];
+
+        const g = ctx.createRadialGradient(sx, sy, 0, sx, sy, r * 2.5);
+        g.addColorStop(0, col + alpha + ')');
+        g.addColorStop(0.4, col + (alpha * 0.4) + ')');
+        g.addColorStop(1, col + '0)');
+        
+        ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fillStyle = g; ctx.fill();
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+
+  function loadChart() {
+    const btn = document.getElementById('btn-chart');
+    const placeholder = document.getElementById('chart-placeholder');
+    const img = document.getElementById('chart-img');
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Memuat...`;
+
+    fetch('/grafik')
+      .then(res => res.json())
+      .then(data => {
+        if(data.image) {
+          placeholder.classList.add('hidden');
+          img.src = "data:image/png;base64," + data.image;
+          img.classList.remove('hidden');
+        }
+      })
+      .catch(err => alert('Gagal memuat grafik.'))
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = `📊 Lihat Grafik Analisis`;
+      });
+  }
+
+  function runRetrain() {
+    const btn = document.getElementById('btn-retrain');
+    const container = document.getElementById('ml-container');
+
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Memproses...`;
+
+    fetch('/train')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('ml-mae').innerText = data.mae;
+        document.getElementById('ml-r2').innerText = (data.r2 * 100).toFixed(4) + "%";
+        document.getElementById('ml-train').innerText = data.n_train + " baris";
+        document.getElementById('ml-test').innerText = data.n_test + " baris";
+        container.classList.remove('hidden');
+      })
+      .catch(err => alert('Gagal memproses model.'))
+      .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = `🔄 Jalankan Prediksi Model`;
+      });
+  }
+</script>
+</body>
+</html>
