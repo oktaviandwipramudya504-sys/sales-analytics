@@ -2,7 +2,7 @@ sales-analytics
 Interface dashboard analisis penjualan dengan estetika Cyberpunk Dark Mode menggunakan Tailwind CSS dan HTML5 Canvas 3D Particle Network
 Sales Analytics - Dashboard Interface
 
-Repositori ini berisi file presentasi utama (`index.html`) untuk **Cyber Sales Analytics Dashboard 2022. Dashboard ini dirancang dengan estetika modern berbalut tema Cyberpunk / Dark Mode menggunakan kombinasi warna gelap, aksen hijau *mint*, *cyan*, dan *teal* untuk menyajikan data metrik penjualan secara interaktif dan scannable.
+Repositori ini berisi file presentasi utama (`index.html`) untuk Cyber Sales Analytics Dashboard 2022. Dashboard ini dirancang dengan estetika modern berbalut tema Cyberpunk / Dark Mode menggunakan kombinasi warna gelap, aksen hijau mint, cyan, dan teal untuk menyajikan data metrik penjualan secara interaktif dan scannable.
 
 
 Fitur Utama Interface
